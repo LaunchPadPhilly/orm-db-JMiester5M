@@ -29,6 +29,9 @@ jobs:
       - name: Prisma Generate
         run: npx prisma generate
 
+      - name: Run Dev
+        run: npm run dev
+
       - name: Run tests
         run: npm test
 
