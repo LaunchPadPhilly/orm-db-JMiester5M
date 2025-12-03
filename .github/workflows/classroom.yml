@@ -30,9 +30,12 @@ jobs:
         run: npx prisma generate
 
       - name: Run Dev
-        run: npm run dev
+        run: npm run dev &
 
-      - name: Run tests
+      - name: waiting for server 
+        run: npx wait-on http://localhost:3000
+
+      - name: Run unit test 
         run: npm test
 
       - name: Run build
