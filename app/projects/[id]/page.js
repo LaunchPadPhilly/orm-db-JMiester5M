@@ -5,27 +5,29 @@ import { notFound } from 'next/navigation';
 export default async function ProjectDetail({ params }) {
   const { id } = params;
 
-  // TODO: Fetch the specific project from your API
-  // Instructions for students:
-  // 1. Use fetch() to get data from /api/projects/[id]
-  // 2. Handle 404 responses by calling notFound()
-  // 3. Parse the JSON response
-  // 4. Display the project details
+  // Fetch the specific project from the API
+  let project = null;
   
-  // Example implementation (students should write this):
-  // const response = await fetch(`http://localhost:3000/api/projects/${id}`);
-  // 
-  // if (!response.ok) {
-  //   if (response.status === 404) {
-  //     notFound();
-  //   }
-  //   throw new Error('Failed to fetch project');
-  // }
-  // 
-  // const project = await response.json();
-
-  // For now, return placeholder until students implement the API
-  const project = null;
+  try {
+    const response = await fetch(`http://localhost:3000/api/projects/${id}`, {
+      cache: 'no-store' // Ensure fresh data on each request
+    });
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        notFound();
+      }
+      throw new Error('Failed to fetch project');
+    }
+    
+    project = await response.json();
+  } catch (error) {
+    console.error('Error fetching project:', error);
+    // If it's not a 404, we'll show the placeholder state
+    if (error.message !== 'NEXT_NOT_FOUND') {
+      project = null;
+    }
+  }
 
   if (!project) {
     return (
