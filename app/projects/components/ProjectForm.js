@@ -313,6 +313,7 @@ export default function ProjectForm({ onSubmit, onCancel, isOpen }) {
               {imagePreview && (
                 <div className="mt-3">
                   <p className="text-sm text-gray-700 mb-2">Preview:</p>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={imagePreview} alt="Preview" className="max-w-xs max-h-48 rounded-md border border-gray-300" />
                 </div>
               )}
