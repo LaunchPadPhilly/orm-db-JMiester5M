@@ -1,34 +1,62 @@
 import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
-import { getAuth } from 'firebase-admin/auth';
-import { initializeApp, cert } from 'firebase-admin/app';
 
 const prisma = new PrismaClient();
 
-// Initialize Firebase Admin SDK
+// Lazy initialization of Firebase Admin SDK
 let adminApp;
-try {
-  adminApp = initializeApp({
-    credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
-  });
-} catch (error) {
-  // App already initialized
+let getAuth;
+
+async function initializeFirebaseAdmin() {
+  if (adminApp) return adminApp;
+  
+  // Only initialize if all required environment variables are present
+  if (!process.env.FIREBASE_PROJECT_ID || 
+      !process.env.FIREBASE_CLIENT_EMAIL || 
+      !process.env.FIREBASE_PRIVATE_KEY) {
+    return null;
+  }
+
+  try {
+    const { initializeApp, cert, getApps } = await import('firebase-admin/app');
+    const { getAuth: getAuthFunc } = await import('firebase-admin/auth');
+    
+    getAuth = getAuthFunc;
+    
+    // Check if already initialized
+    if (getApps().length > 0) {
+      adminApp = getApps()[0];
+      return adminApp;
+    }
+    
+    adminApp = initializeApp({
+      credential: cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      }),
+    });
+    
+    return adminApp;
+  } catch (error) {
+    console.error('Firebase Admin initialization error:', error);
+    return null;
+  }
 }
 
 // Verify Firebase token
 async function verifyAuth(request) {
   try {
+    const app = await initializeFirebaseAdmin();
+    if (!app) return null;
+    
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return null;
     }
     
     const token = authHeader.substring(7);
-    const decodedToken = await getAuth(adminApp).verifyIdToken(token);
+    const decodedToken = await getAuth(app).verifyIdToken(token);
     return decodedToken;
   } catch (error) {
     console.error('Auth verification failed:', error);
