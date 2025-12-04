@@ -35,19 +35,25 @@
 
 import { useState } from 'react';
 import TechnologyInput from './TechnologyInput';
+import { useAuth } from '@/app/lib/authContext';
 
 export default function ProjectForm({ onSubmit, onCancel, isOpen }) {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     imageUrl: '',
     projectUrl: '',
     githubUrl: '',
-    technologies: []
+    technologies: [],
+    projectCreated: '',
+    lastUpdate: ''
   });
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
 
   const validateForm = () => {
     const newErrors = {};
@@ -69,8 +75,10 @@ export default function ProjectForm({ onSubmit, onCancel, isOpen }) {
     
     // URL validations
     const urlRegex = /^https?:\/\/.+\..+/;
+    const dataUrlRegex = /^data:image\/.+;base64,/;
     
-    if (formData.imageUrl && !urlRegex.test(formData.imageUrl)) {
+    // Image URL validation - allow either http(s) URL or base64 data URL
+    if (formData.imageUrl && !urlRegex.test(formData.imageUrl) && !dataUrlRegex.test(formData.imageUrl)) {
       newErrors.imageUrl = 'Invalid URL format';
     }
     
@@ -90,6 +98,28 @@ export default function ProjectForm({ onSubmit, onCancel, isOpen }) {
     e.preventDefault();
     
     if (!validateForm()) {
+      // Create a user-friendly error message using the newErrors from validateForm
+      // We need to re-check the form data here since errors state hasn't updated yet
+      const errorMessages = [];
+      
+      if (!formData.title.trim()) errorMessages.push('• Title is required');
+      if (!formData.description.trim()) errorMessages.push('• Description is required');
+      if (formData.technologies.length === 0) errorMessages.push('• At least one technology is required');
+      
+      const urlRegex = /^https?:\/\/.+\..+/;
+      const dataUrlRegex = /^data:image\/.+;base64,/;
+      
+      if (formData.imageUrl && !urlRegex.test(formData.imageUrl) && !dataUrlRegex.test(formData.imageUrl)) {
+        errorMessages.push('• Image URL must be a valid URL (e.g., https://example.com/image.jpg) or uploaded image');
+      }
+      if (formData.projectUrl && !urlRegex.test(formData.projectUrl)) {
+        errorMessages.push('• Project URL must be a valid URL starting with http:// or https:// (e.g., https://example.com)');
+      }
+      if (formData.githubUrl && !urlRegex.test(formData.githubUrl)) {
+        errorMessages.push('• GitHub URL must be a valid URL starting with http:// or https:// (e.g., https://github.com/username/repo)');
+      }
+      
+      alert('Please fix the following errors:\n\n' + errorMessages.join('\n'));
       return;
     }
     
@@ -104,9 +134,13 @@ export default function ProjectForm({ onSubmit, onCancel, isOpen }) {
         imageUrl: '',
         projectUrl: '',
         githubUrl: '',
-        technologies: []
+        technologies: [],
+        projectCreated: '',
+        lastUpdate: ''
       });
       setErrors({});
+      setImageFile(null);
+      setImagePreview('');
     } catch (error) {
       console.error('Form submission error:', error);
     } finally {
@@ -121,7 +155,7 @@ export default function ProjectForm({ onSubmit, onCancel, isOpen }) {
       [name]: value
     }));
     // Clear error for this field when user starts typing
-    if (errors[name]) {
+    if (errors?.[name]) {
       setErrors(prev => ({
         ...prev,
         [name]: ''
@@ -135,11 +169,40 @@ export default function ProjectForm({ onSubmit, onCancel, isOpen }) {
       technologies
     }));
     // Clear technologies error when user adds a technology
-    if (errors.technologies) {
+    if (errors?.technologies) {
       setErrors(prev => ({
         ...prev,
         technologies: ''
       }));
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check if it's an image
+      if (!file.type.startsWith('image/')) {
+        setErrors(prev => ({ ...prev, imageUrl: 'Please select an image file' }));
+        return;
+      }
+      
+      setImageFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+        setFormData(prev => ({
+          ...prev,
+          imageUrl: reader.result // Store base64 data URL
+        }));
+      };
+      reader.readAsDataURL(file);
+      
+      // Clear error
+      if (errors?.imageUrl) {
+        setErrors(prev => ({ ...prev, imageUrl: '' }));
+      }
     }
   };
 
@@ -148,15 +211,15 @@ export default function ProjectForm({ onSubmit, onCancel, isOpen }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <h2 className="text-2xl font-bold mb-6">Add New Project</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl my-8 max-h-[90vh] overflow-y-auto">
+        <div className="p-4 md:p-6">
+          <h2 className="text-2xl font-bold mb-6 text-gray-900">Add New Project</h2>
           
           <form onSubmit={handleSubmit}>
             {/* Title */}
             <div className="mb-4">
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="title" className="block text-sm font-medium text-gray-900 mb-1">
                 Title *
               </label>
               <input
@@ -165,18 +228,18 @@ export default function ProjectForm({ onSubmit, onCancel, isOpen }) {
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 ${
                   errors.title ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
-              {errors.title && (
+              {errors?.title && (
                 <p className="text-red-500 text-sm mt-1">{errors.title}</p>
               )}
             </div>
 
             {/* Description */}
             <div className="mb-4">
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-900 mb-1">
                 Description *
               </label>
               <textarea
@@ -185,18 +248,18 @@ export default function ProjectForm({ onSubmit, onCancel, isOpen }) {
                 value={formData.description}
                 onChange={handleChange}
                 rows="4"
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 ${
                   errors.description ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
-              {errors.description && (
+              {errors?.description && (
                 <p className="text-red-500 text-sm mt-1">{errors.description}</p>
               )}
             </div>
 
             {/* Technologies */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-900 mb-1">
                 Technologies *
               </label>
               <TechnologyInput
@@ -204,35 +267,64 @@ export default function ProjectForm({ onSubmit, onCancel, isOpen }) {
                 onChange={handleTechnologiesChange}
                 error={errors.technologies}
               />
-              {errors.technologies && (
+              {errors?.technologies && (
                 <p className="text-red-500 text-sm mt-1">{errors.technologies}</p>
               )}
             </div>
 
-            {/* Image URL */}
+            {/* Image Upload or URL */}
             <div className="mb-4">
-              <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-1">
-                Image URL
+              <label className="block text-sm font-medium text-gray-900 mb-1">
+                Project Image
               </label>
+              
+              {/* File Upload */}
+              <div className="mb-2">
+                <input
+                  type="file"
+                  id="imageFile"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                />
+              </div>
+              
+              {/* Or URL */}
+              <div className="flex items-center gap-2 mb-2">
+                <div className="flex-1 border-t border-gray-300"></div>
+                <span className="text-sm text-gray-500">or</span>
+                <div className="flex-1 border-t border-gray-300"></div>
+              </div>
+              
               <input
                 type="text"
                 id="imageUrl"
                 name="imageUrl"
-                value={formData.imageUrl}
+                value={imageFile ? '' : formData.imageUrl}
                 onChange={handleChange}
                 placeholder="https://example.com/image.jpg"
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                disabled={imageFile !== null}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed ${
                   errors.imageUrl ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
-              {errors.imageUrl && (
+              
+              {/* Image Preview */}
+              {imagePreview && (
+                <div className="mt-3">
+                  <p className="text-sm text-gray-700 mb-2">Preview:</p>
+                  <img src={imagePreview} alt="Preview" className="max-w-xs max-h-48 rounded-md border border-gray-300" />
+                </div>
+              )}
+              
+              {errors?.imageUrl && (
                 <p className="text-red-500 text-sm mt-1">{errors.imageUrl}</p>
               )}
             </div>
 
             {/* Project URL */}
             <div className="mb-4">
-              <label htmlFor="projectUrl" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="projectUrl" className="block text-sm font-medium text-gray-900 mb-1">
                 Project URL
               </label>
               <input
@@ -242,18 +334,18 @@ export default function ProjectForm({ onSubmit, onCancel, isOpen }) {
                 value={formData.projectUrl}
                 onChange={handleChange}
                 placeholder="https://example.com"
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 ${
                   errors.projectUrl ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
-              {errors.projectUrl && (
+              {errors?.projectUrl && (
                 <p className="text-red-500 text-sm mt-1">{errors.projectUrl}</p>
               )}
             </div>
 
             {/* GitHub URL */}
-            <div className="mb-6">
-              <label htmlFor="githubUrl" className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="mb-4">
+              <label htmlFor="githubUrl" className="block text-sm font-medium text-gray-900 mb-1">
                 GitHub URL
               </label>
               <input
@@ -263,13 +355,45 @@ export default function ProjectForm({ onSubmit, onCancel, isOpen }) {
                 value={formData.githubUrl}
                 onChange={handleChange}
                 placeholder="https://github.com/username/repo"
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.githubUrl ? 'border-red-500' : 'border-gray-300'
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 ${
+                  errors?.githubUrl ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
-              {errors.githubUrl && (
+              {errors?.githubUrl ? (
                 <p className="text-red-500 text-sm mt-1">{errors.githubUrl}</p>
-              )}
+              ) : null}
+            </div>
+
+            {/* Project Created Date */}
+            <div className="mb-4">
+              <label htmlFor="projectCreated" className="block text-sm font-medium text-gray-900 mb-1">
+                Project Created
+              </label>
+              <input
+                type="text"
+                id="projectCreated"
+                name="projectCreated"
+                value={formData.projectCreated}
+                onChange={handleChange}
+                placeholder="e.g., December 2024 or 12/2024"
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 border-gray-300"
+              />
+            </div>
+
+            {/* Last Update Date */}
+            <div className="mb-6">
+              <label htmlFor="lastUpdate" className="block text-sm font-medium text-gray-900 mb-1">
+                Last Update
+              </label>
+              <input
+                type="text"
+                id="lastUpdate"
+                name="lastUpdate"
+                value={formData.lastUpdate}
+                onChange={handleChange}
+                placeholder="e.g., December 2024 or 12/2024"
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 border-gray-300"
+              />
             </div>
 
             {/* Form Actions */}

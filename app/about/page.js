@@ -1,27 +1,61 @@
+import Image from 'next/image';
+
 export default function About() {
   return (
     <div className="min-h-screen p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-5xl font-bold mb-8">About Me</h1>
+        <h1 className="text-5xl md:text-6xl font-bold mb-12 leading-tight text-gray-100">About Me</h1>
         
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-          <h2 className="text-3xl font-bold mb-4">TODO: Add Your Profile</h2>
-          <div className="space-y-4 text-gray-600">
-            <p>✏️ Add a profile photo using the next/image component</p>
-            <p>✏️ Write a paragraph about who you are</p>
-            <p>✏️ List your skills or interests</p>
-            <p>✏️ Share your goals or what you&apos;re learning</p>
+        <div className="bg-purple-900/40 rounded-lg shadow-lg p-6 md:p-10 mb-8 border border-purple-700/40">
+          <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start mb-8">
+            {/* Profile photo */}
+            <Image 
+              src="/Headshot.jpg"
+              alt="Jaylen Marshall"
+              width={300}
+              height={300}
+              className="w-40 md:w-72 h-40 md:h-72 rounded-full border-4 border-purple-600/30 flex-shrink-0 object-cover"
+            />
+            
+            {/* Bio */}
+            <div className="flex-1 space-y-4 text-gray-200 text-lg leading-relaxed">
+              <p>
+                I&apos;m a motivated Front-End Engineer currently in my LiftOff year at Launchpad, where I&apos;m gaining hands-on experience in Front-End web development.
+              </p>
+              <p>
+                What drives me is the challenge of turning ideas into clean, functional, and user-friendly web applications. Through Launchpad, I&apos;ve been developing projects using tech languages like HTML, CSS, JavaScript, React and Next.js, while applying agile practices, version control (Git/GitHub), and problem-solving strategies that mirror real-world development environments.
+              </p>
+              <p>
+                I&apos;m continuously learning and refining my craft, not just to write code, but to write maintainable, scalable solutions that make a real impact. Looking ahead, I&apos;m eager to grow into a Front-End developer role, where I can collaborate with teams, learn from experienced engineers, and contribute to projects that push my skills and creativity even further.
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
-          <h3 className="font-bold text-blue-900 mb-2">💡 Example Structure:</h3>
-          <ul className="text-blue-800 space-y-1">
-            <li>• Profile photo (circular, 300x300px)</li>
-            <li>• Bio paragraph (3-5 sentences)</li>
-            <li>• Skills section with badges</li>
-            <li>• Education or experience timeline</li>
-          </ul>
+        {/* Skills Section */}
+        <div className="bg-purple-900/40 rounded-lg shadow-lg p-8 md:p-10 border border-purple-700/40">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-100">Skills & Technologies</h2>
+          <div className="flex flex-wrap gap-3">
+            <span className="bg-purple-800/60 text-purple-100 px-4 py-2 rounded-full border border-purple-600/40">JavaScript</span>
+            <span className="bg-purple-800/60 text-purple-100 px-4 py-2 rounded-full border border-purple-600/40">Python</span>
+            <span className="bg-purple-800/60 text-purple-100 px-4 py-2 rounded-full border border-purple-600/40">React</span>
+            <span className="bg-purple-800/60 text-purple-100 px-4 py-2 rounded-full border border-purple-600/40">Next.js</span>
+            <span className="bg-purple-800/60 text-purple-100 px-4 py-2 rounded-full border border-purple-600/40">CSS</span>
+            <span className="bg-purple-800/60 text-purple-100 px-4 py-2 rounded-full border border-purple-600/40">HTML</span>
+            <span className="bg-purple-800/60 text-purple-100 px-4 py-2 rounded-full border border-purple-600/40">Git/GitHub</span>
+            <span className="bg-purple-800/60 text-purple-100 px-4 py-2 rounded-full border border-purple-600/40">Node.js</span>
+            <span className="bg-purple-800/60 text-purple-100 px-4 py-2 rounded-full border border-purple-600/40">Express.js</span>
+            <span className="bg-purple-800/60 text-purple-100 px-4 py-2 rounded-full border border-purple-600/40">MySQL</span>
+            <span className="bg-purple-800/60 text-purple-100 px-4 py-2 rounded-full border border-purple-600/40">Vite</span>
+            <span className="bg-purple-800/60 text-purple-100 px-4 py-2 rounded-full border border-purple-600/40">npm</span>
+            <span className="bg-purple-800/60 text-purple-100 px-4 py-2 rounded-full border border-purple-600/40">JSON</span>
+            <span className="bg-purple-800/60 text-purple-100 px-4 py-2 rounded-full border border-purple-600/40">VS Code</span>
+            <span className="bg-purple-800/60 text-purple-100 px-4 py-2 rounded-full border border-purple-600/40">Vercel</span>
+            <span className="bg-purple-800/60 text-purple-100 px-4 py-2 rounded-full border border-purple-600/40">Figma</span>
+            <span className="bg-purple-800/60 text-purple-100 px-4 py-2 rounded-full border border-purple-600/40">Notion</span>
+            <span className="bg-purple-800/60 text-purple-100 px-4 py-2 rounded-full border border-purple-600/40">Slack</span>
+            <span className="bg-purple-800/60 text-purple-100 px-4 py-2 rounded-full border border-purple-600/40">REST APIs</span>
+          </div>
         </div>
       </div>
     </div>

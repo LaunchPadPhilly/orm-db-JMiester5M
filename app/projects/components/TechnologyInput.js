@@ -38,10 +38,11 @@ import { useState } from 'react';
 
 const SUGGESTED_TECHNOLOGIES = [
   'JavaScript', 'TypeScript', 'React', 'Next.js', 'Node.js', 'Express',
-  'HTML', 'CSS', 'Tailwind CSS', 'Bootstrap', 'Python', 'Java',
-  'PostgreSQL', 'MongoDB', 'MySQL', 'Prisma', 'GraphQL', 'REST API',
-  'Git', 'Docker', 'AWS', 'Vercel', 'Figma', 'Photoshop'
-];
+  'HTML', 'CSS', 'Tailwind CSS', 'Bootstrap', 'Python', 'JSON Server',
+  'PostgreSQL', 'MongoDB', 'MySQL', 'Prisma', 'ESLint', 'OpenAI API',
+  'Git', 'Docker', 'AWS', 'Vercel', 'Vite', 'React Router', 'Firebase', 
+  'TanStack Query', 'Lucide React'
+].sort((a, b) => a.localeCompare(b));
 
 export default function TechnologyInput({ technologies = [], onChange, error }) {
   const [inputValue, setInputValue] = useState('');
@@ -85,7 +86,7 @@ export default function TechnologyInput({ technologies = [], onChange, error }) 
           onChange={(e) => setInputValue(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="Enter a technology"
-          className={`flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+          className={`flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 ${
             error ? 'border-red-500' : 'border-gray-300'
           }`}
         />
@@ -122,7 +123,7 @@ export default function TechnologyInput({ technologies = [], onChange, error }) 
 
       {/* Quick-add buttons for common technologies */}
       <div>
-        <p className="text-sm text-gray-600 mb-2">Quick add:</p>
+        <p className="text-sm text-gray-900 mb-2">Quick add:</p>
         <div className="flex flex-wrap gap-2">
           {SUGGESTED_TECHNOLOGIES.map((tech) => (
             <button

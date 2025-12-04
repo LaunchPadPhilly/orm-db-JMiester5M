@@ -48,7 +48,7 @@ export async function PUT(request, { params }) {
     }
     
     const body = await request.json();
-    const { title, description, imageUrl, projectUrl, githubUrl, technologies } = body;
+    const { title, description, imageUrl, projectUrl, githubUrl, technologies, projectCreated, lastUpdate } = body;
   
     const project = await prisma.project.update({
       where: { id: id },
@@ -58,7 +58,9 @@ export async function PUT(request, { params }) {
         imageUrl,
         projectUrl,
         githubUrl,
-        technologies
+        technologies,
+        projectCreated,
+        lastUpdate
       }
     });
   

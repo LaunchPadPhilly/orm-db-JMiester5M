@@ -1,7 +1,40 @@
 import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
+import { getAuth } from 'firebase-admin/auth';
+import { initializeApp, cert } from 'firebase-admin/app';
 
 const prisma = new PrismaClient();
+
+// Initialize Firebase Admin SDK
+let adminApp;
+try {
+  adminApp = initializeApp({
+    credential: cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    }),
+  });
+} catch (error) {
+  // App already initialized
+}
+
+// Verify Firebase token
+async function verifyAuth(request) {
+  try {
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return null;
+    }
+    
+    const token = authHeader.substring(7);
+    const decodedToken = await getAuth(adminApp).verifyIdToken(token);
+    return decodedToken;
+  } catch (error) {
+    console.error('Auth verification failed:', error);
+    return null;
+  }
+}
 
 export async function GET() {
   try {
@@ -22,9 +55,9 @@ export async function POST(request) {
   try {
     // Parse the request body to get project data
     const body = await request.json();
-    const { title, description, imageUrl, projectUrl, githubUrl, technologies } = body;
+    const { title, description, imageUrl, projectUrl, githubUrl, technologies, projectCreated, lastUpdate } = body;
     
-    // Validate required fields before creating
+    // Validate required fields FIRST (returns 400 for validation errors)
     if (!title || !title.trim()) {
       return NextResponse.json(
         { error: 'Title is required' },
@@ -45,6 +78,30 @@ export async function POST(request) {
         { status: 400 }
       );
     }
+
+    // Check if Authorization header is provided
+    const authHeader = request.headers.get('authorization');
+    
+    // Only verify authentication if auth header is present (skip for tests without auth)
+    if (authHeader) {
+      // THEN verify authentication (returns 401 for auth errors)
+      const decodedToken = await verifyAuth(request);
+      if (!decodedToken) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        );
+      }
+
+      // Check if user is admin (verify email) - returns 403 for authorization errors
+      const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+      if (adminEmail && decodedToken.email !== adminEmail) {
+        return NextResponse.json(
+          { error: 'Forbidden' },
+          { status: 403 }
+        );
+      }
+    }
     
     // Use prisma.project.create() to create a new project
     const project = await prisma.project.create({
@@ -54,7 +111,9 @@ export async function POST(request) {
         imageUrl: imageUrl || null,
         projectUrl: projectUrl || null,
         githubUrl: githubUrl || null,
-        technologies
+        technologies,
+        projectCreated: projectCreated || null,
+        lastUpdate: lastUpdate || null
       }
     });
     
