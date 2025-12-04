@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Contact() {
   return (
     <div className="min-h-screen p-8">
@@ -23,9 +25,9 @@ export default function Contact() {
               <span className="text-3xl">🔗</span>
               <div>
                 <p className="font-bold text-gray-900">LinkedIn</p>
-                <a href="#" className="text-blue-500 hover:underline">
+                <Link href="#" className="text-blue-500 hover:underline">
                   linkedin.com/in/yourname
-                </a>
+                </Link>
                 <p className="text-sm text-blue-600">✏️ TODO: Add your LinkedIn URL</p>
               </div>
             </div>
@@ -34,9 +36,9 @@ export default function Contact() {
               <span className="text-3xl">💻</span>
               <div>
                 <p className="font-bold text-gray-900">GitHub</p>
-                <a href="#" className="text-blue-500 hover:underline">
+                <Link href="#" className="text-blue-500 hover:underline">
                   github.com/yourname
-                </a>
+                </Link>
                 <p className="text-sm text-blue-600">✏️ TODO: Add your GitHub URL</p>
               </div>
             </div>
