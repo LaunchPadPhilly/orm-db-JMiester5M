@@ -9,7 +9,12 @@ export default async function ProjectDetail({ params }) {
   let project = null;
   
   try {
-    const response = await fetch(`http://localhost:3000/api/projects/${id}`, {
+    // Use relative path for both local and production
+    const baseUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}` 
+      : 'http://localhost:3000';
+    
+    const response = await fetch(`${baseUrl}/api/projects/${id}`, {
       cache: 'no-store' // Ensure fresh data on each request
     });
     

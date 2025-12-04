@@ -30,6 +30,7 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+.env.production
 .instructors 
 .instructor-notes/
 
@@ -44,3 +45,6 @@ next-env.d.ts
 .vitest
 
 /app/generated/prisma
+
+.vercel
+.env*.local
