@@ -83,7 +83,7 @@ export async function POST(request) {
   try {
     // Parse the request body to get project data
     const body = await request.json();
-    const { title, description, imageUrl, projectUrl, githubUrl, technologies, projectCreated, lastUpdate } = body;
+    const { title, description, imageUrl, projectUrl, githubUrl, technologies } = body;
     
     // Validate required fields FIRST (returns 400 for validation errors)
     if (!title || !title.trim()) {
@@ -139,9 +139,7 @@ export async function POST(request) {
         imageUrl: imageUrl || null,
         projectUrl: projectUrl || null,
         githubUrl: githubUrl || null,
-        technologies,
-        projectCreated: projectCreated || null,
-        lastUpdate: lastUpdate || null
+        technologies
       }
     });
     
