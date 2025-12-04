@@ -4,8 +4,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import ProjectForm from '../app/projects/components/ProjectForm.js'
-import TechnologyInput from '../app/projects/components/TechnologyInput.js'
+import ProjectForm from '../app/projects/components/ProjectForm.jsx'
+import TechnologyInput from '../app/projects/components/TechnologyInput.jsx'
 
 describe('ProjectForm Component', () => {
   const mockOnSubmit = vi.fn()
