@@ -15,7 +15,7 @@ export default defineConfig({
     setupFiles: './tests/setup.jsx',
     testTimeout: 30000,
     threads: false,
-    singleThread: true,
+    fileParallelism: false,
   },
   resolve: {
     alias: {
