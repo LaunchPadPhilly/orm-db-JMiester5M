@@ -75,15 +75,15 @@ export default function ProjectForm({ onSubmit, onCancel, isOpen }) {
     
     // Image URL validation - allow either http(s) URL or base64 data URL
     if (formData.imageUrl && !urlRegex.test(formData.imageUrl) && !dataUrlRegex.test(formData.imageUrl)) {
-      newErrors.imageUrl = 'Invalid URL format';
+      newErrors.imageUrl = 'Please enter a valid URL';
     }
     
     if (formData.projectUrl && !urlRegex.test(formData.projectUrl)) {
-      newErrors.projectUrl = 'Invalid URL format';
+      newErrors.projectUrl = 'Please enter a valid URL';
     }
     
     if (formData.githubUrl && !urlRegex.test(formData.githubUrl)) {
-      newErrors.githubUrl = 'Invalid URL format';
+      newErrors.githubUrl = 'Please enter a valid URL';
     }
     
     setErrors(newErrors);
@@ -214,7 +214,7 @@ export default function ProjectForm({ onSubmit, onCancel, isOpen }) {
             {/* Title */}
             <div className="mb-4">
               <label htmlFor="title" className="block text-sm font-medium text-gray-900 mb-1">
-                Title *
+                Project Title *
               </label>
               <input
                 type="text"
@@ -290,6 +290,7 @@ export default function ProjectForm({ onSubmit, onCancel, isOpen }) {
                 <div className="flex-1 border-t border-gray-300"></div>
               </div>
               
+              <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-900 mb-1">Image URL</label>
               <input
                 type="text"
                 id="imageUrl"
@@ -374,7 +375,7 @@ export default function ProjectForm({ onSubmit, onCancel, isOpen }) {
                 disabled={loading}
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Submitting...' : 'Add Project'}
+                {loading ? 'Creating Project...' : 'Create Project'}
               </button>
             </div>
           </form>

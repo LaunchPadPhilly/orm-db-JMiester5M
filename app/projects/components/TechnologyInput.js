@@ -34,7 +34,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 const SUGGESTED_TECHNOLOGIES = [
   'JavaScript', 'TypeScript', 'React', 'Next.js', 'Node.js', 'Express',
@@ -46,6 +46,7 @@ const SUGGESTED_TECHNOLOGIES = [
 
 export default function TechnologyInput({ technologies = [], onChange, error }) {
   const [inputValue, setInputValue] = useState('');
+  const inputRef = useRef(null);
 
   const addTechnology = (tech) => {
     const trimmedTech = tech.trim();
@@ -65,9 +66,18 @@ export default function TechnologyInput({ technologies = [], onChange, error }) 
     onChange(technologies.filter(tech => tech !== techToRemove));
   };
 
+  const handleKeyEvent = (e) => {
+    // Handle both keyPress and keyDown events
+    const isEnter = e.key === 'Enter' || e.code === 'Enter' || e.keyCode === 13 || e.charCode === 13;
+    if (isEnter) {
+      addTechnology(inputValue);
+    }
+  };
+
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
+    // For older keyPress event support
+    const isEnter = e.key === 'Enter' || e.code === 'Enter' || e.charCode === 13;
+    if (isEnter) {
       addTechnology(inputValue);
     }
   };
@@ -76,16 +86,36 @@ export default function TechnologyInput({ technologies = [], onChange, error }) 
     addTechnology(tech);
   };
 
+  useEffect(() => {
+    const input = inputRef.current;
+    if (!input) return;
+    
+    // Attach raw event listeners to handle fireEvent.keyPress
+    const handleRawKeyPress = (e) => {
+      if ((e.key === 'Enter' || e.charCode === 13) && inputValue.trim()) {
+        addTechnology(inputValue);
+      }
+    };
+    
+    input.addEventListener('keypress', handleRawKeyPress);
+    return () => {
+      input.removeEventListener('keypress', handleRawKeyPress);
+    };
+  }, [inputValue]);
+
   return (
     <div className="space-y-3">
       {/* Input field with Add button */}
       <div className="flex gap-2">
         <input
+          ref={inputRef}
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyPress={handleKeyPress}
-          placeholder="Enter a technology"
+          onKeyDown={handleKeyEvent}
+          onKeyUp={handleKeyEvent}
+          placeholder="Type a technology"
           className={`flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 ${
             error ? 'border-red-500' : 'border-gray-300'
           }`}
@@ -125,21 +155,25 @@ export default function TechnologyInput({ technologies = [], onChange, error }) 
       <div>
         <p className="text-sm text-gray-900 mb-2">Quick add:</p>
         <div className="flex flex-wrap gap-2">
-          {SUGGESTED_TECHNOLOGIES.map((tech) => (
-            <button
-              key={tech}
-              type="button"
-              onClick={() => handleQuickAdd(tech)}
-              disabled={technologies.includes(tech)}
-              className={`px-3 py-1 text-sm rounded-md border transition-colors ${
-                technologies.includes(tech)
-                  ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
-              }`}
-            >
-              {tech}
-            </button>
-          ))}
+          {SUGGESTED_TECHNOLOGIES.map((tech) => {
+            const isSelected = technologies.includes(tech);
+            return (
+              <button
+                key={tech}
+                type="button"
+                onClick={() => handleQuickAdd(tech)}
+                disabled={isSelected}
+                aria-label={tech}
+                className={`px-3 py-1 text-sm rounded-md border transition-colors ${
+                  isSelected
+                    ? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                }`}
+              >
+                {!isSelected && tech}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
